@@ -133,6 +133,8 @@ export default function ChatInterface({ room, userId, token, userCoords: _userCo
       <MessageInput
         onSend={sendMessage}
         disabled={!connected}
+        roomId={room.room_id}
+        token={token}
       />
     </div>
   );

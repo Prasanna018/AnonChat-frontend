@@ -85,7 +85,9 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
             room_id: roomId ?? '',
             user_id: event.user_id!,
             user_name: event.user_name!,
-            content: event.content!,
+            content: event.content ?? null,
+            media_url: event.media_url,
+            media_type: event.media_type,
             timestamp: event.timestamp!,
             is_system: event.is_system ?? false,
           };
@@ -147,9 +149,18 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, token]);
 
-  const sendMessage = useCallback((content: string) => {
+  const sendMessage = useCallback((payload: { content: string; media_url?: string; media_type?: string } | string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'send_message', content }));
+      if (typeof payload === 'string') {
+        wsRef.current.send(JSON.stringify({ type: 'send_message', content: payload }));
+      } else {
+        wsRef.current.send(JSON.stringify({ 
+          type: 'send_message', 
+          content: payload.content,
+          media_url: payload.media_url,
+          media_type: payload.media_type
+        }));
+      }
     }
   }, []);
 

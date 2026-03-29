@@ -20,7 +20,9 @@ export interface Message {
   room_id: string;
   user_id: string;
   user_name: string;
-  content: string;
+  content: string | null;
+  media_url?: string;
+  media_type?: string;
   timestamp: string;
   is_system: boolean;
 }
@@ -55,6 +57,8 @@ export interface WSEvent {
   user_id?: string;
   user_name?: string;
   content?: string;
+  media_url?: string;
+  media_type?: string;
   timestamp?: string;
   is_system?: boolean;
   reason?: string;

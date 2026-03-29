@@ -72,7 +72,34 @@ export default function MessageBubble({ message, isOwn }: Props) {
               {message.user_name}
             </p>
           )}
-          <p className="text-sm leading-relaxed break-words">{message.content}</p>
+          {message.media_url && (
+            <div className="mb-1">
+              {message.media_type?.startsWith('image/') ? (
+                <img 
+                  src={message.media_url} 
+                  alt="Attachment" 
+                  className="max-w-[200px] max-h-[240px] rounded-lg object-contain cursor-pointer transition-transform duration-200 hover:scale-[1.02]"
+                  onClick={() => window.open(message.media_url, '_blank')}
+                />
+              ) : (
+                <a 
+                  href={message.media_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded-lg bg-black/10 hover:bg-black/20 transition-colors duration-200"
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="text-sm font-medium underline underline-offset-2">View Document</span>
+                </a>
+              )}
+            </div>
+          )}
+          {message.content && (
+            <p className="text-sm leading-relaxed break-words">{message.content}</p>
+          )}
         </div>
       </div>
 
