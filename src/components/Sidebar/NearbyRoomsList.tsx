@@ -9,6 +9,7 @@ interface Props {
   onJoin: (room: Room) => void;
   onRefresh: () => void;
   onCreateRoom: () => void;
+  isCreating?: boolean;
 }
 
 export default function NearbyRoomsList({
@@ -18,6 +19,7 @@ export default function NearbyRoomsList({
   onJoin,
   onRefresh,
   onCreateRoom,
+  isCreating = false,
 }: Props) {
   return (
     <div className="flex flex-col h-full" style={{ color: 'var(--sidebar-foreground)' }}>
@@ -129,12 +131,20 @@ export default function NearbyRoomsList({
       >
         <button
           onClick={onCreateRoom}
+          disabled={isCreating}
           className="btn-secondary w-full text-xs"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-          </svg>
-          New Room Here
+          {isCreating ? (
+            <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          )}
+          {isCreating ? 'Creating…' : 'New Room Here'}
         </button>
       </div>
     </div>

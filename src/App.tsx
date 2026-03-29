@@ -61,25 +61,25 @@ function App() {
 
       {/* Top nav */}
       <header
-        className="flex items-center justify-between px-5 py-3.5 shrink-0"
+        className="flex items-center justify-between px-4 py-3 shrink-0"
         style={{
           background: 'var(--card)',
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* Logo mark */}
           <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
             style={{ background: 'var(--primary)' }}
           >
-            <span className="text-sm">🌐</span>
+            <span className="text-xs">🌐</span>
           </div>
-          <span className="font-extrabold text-lg tracking-tight" style={{ color: 'var(--foreground)' }}>
+          <span className="font-extrabold text-base tracking-tight" style={{ color: 'var(--foreground)' }}>
             Echo<span className="text-gradient">Spot</span>
           </span>
           <span
-            className="badge text-xs"
+            className="badge text-[10px] hidden sm:inline-flex"
             style={{
               background: 'var(--tw-blue-10)',
               color: 'var(--primary)',
@@ -90,7 +90,7 @@ function App() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {coords && (
             <div
               className="hidden sm:flex items-center gap-1.5 text-xs"
@@ -105,16 +105,16 @@ function App() {
           )}
           {user && (
             <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl"
               style={{ background: 'var(--muted)', border: '1px solid var(--border)' }}
             >
               <div
-                className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold"
+                className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0"
                 style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
               >
                 {user.display_name[0].toUpperCase()}
               </div>
-              <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <span className="text-xs font-semibold max-w-[80px] truncate" style={{ color: 'var(--foreground)' }}>
                 {user.display_name}
               </span>
             </div>
