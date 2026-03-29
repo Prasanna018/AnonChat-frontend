@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="echospot-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Container Box -->
+  <rect width="512" height="512" rx="128" fill="url(#echospot-gradient)" />
+
+  <!-- Outer Radar Ripple -->
+  <circle cx="256" cy="200" r="140" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.25" />
+  
+  <!-- Middle Radar Ripple -->
+  <circle cx="256" cy="200" r="95" fill="none" stroke="#ffffff" stroke-width="14" opacity="0.5" />
+
+  <!-- Inner Radar Ripple -->
+  <circle cx="256" cy="200" r="50" fill="none" stroke="#ffffff" stroke-width="16" opacity="0.8" />
+
+  <!-- Base Pin Shadow / Drop -->
+  <ellipse cx="256" cy="380" rx="40" ry="15" fill="#000000" opacity="0.25" />
+
+  <!-- Map Pin Body (modified Chat Bubble shape pointing down) -->
+  <path 
+    d="M 256 95 
+       C 150 95, 110 150, 110 215 
+       C 110 280, 200 350, 256 420 
+       C 312 350, 402 280, 402 215 
+       C 402 150, 362 95, 256 95 Z" 
+    fill="#ffffff" 
+    opacity="0.95" />
+
+  <!-- Chat Lines inside the Map Pin -->
+  <rect x="206" y="195" width="100" height="18" rx="9" fill="url(#echospot-gradient)" />
+  <rect x="206" y="240" width="70" height="18" rx="9" fill="url(#echospot-gradient)" />
+
+</svg>
