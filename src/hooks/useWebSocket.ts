@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Message, WSEvent } from '../types';
+import type { Message, WSEvent, Coords } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 const WS_BASE = API_URL
@@ -12,10 +12,13 @@ const PING_INTERVAL = 20000;
 interface UseWebSocketOptions {
   roomId: string | null;
   token: string | null;
+  coords?: Coords | null;
   onRoomClosed?: (reason: string) => void;
 }
 
-export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOptions) {
+export function useWebSocket({ roomId, token, coords, onRoomClosed }: UseWebSocketOptions) {
+  const coordsRef = useRef(coords);
+  useEffect(() => { coordsRef.current = coords; }, [coords]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [connected, setConnected] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
@@ -55,7 +58,8 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
       clearTimers();
       pingIntervalRef.current = setInterval(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({ type: 'ping' }));
+          const loc = coordsRef.current ? { lat: coordsRef.current.lat, lng: coordsRef.current.lng } : {};
+          wsRef.current.send(JSON.stringify({ type: 'ping', ...loc }));
         }
       }, PING_INTERVAL);
     };
@@ -151,14 +155,16 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
 
   const sendMessage = useCallback((payload: { content: string; media_url?: string; media_type?: string } | string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
+      const loc = coordsRef.current ? { lat: coordsRef.current.lat, lng: coordsRef.current.lng } : {};
       if (typeof payload === 'string') {
-        wsRef.current.send(JSON.stringify({ type: 'send_message', content: payload }));
+        wsRef.current.send(JSON.stringify({ type: 'send_message', content: payload, ...loc }));
       } else {
         wsRef.current.send(JSON.stringify({ 
           type: 'send_message', 
           content: payload.content,
           media_url: payload.media_url,
-          media_type: payload.media_type
+          media_type: payload.media_type,
+          ...loc
         }));
       }
     }

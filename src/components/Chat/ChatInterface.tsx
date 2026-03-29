@@ -15,12 +15,13 @@ interface Props {
 }
 
 export default function ChatInterface({
-  room, userId, token, userCoords: _coords,
+  room, userId, token, userCoords,
   onLeave, onRoomClosed, onBackToRooms
 }: Props) {
   const { messages, connected, participantCount, sendMessage } = useWebSocket({
     roomId: room.room_id,
     token,
+    coords: userCoords,
     onRoomClosed,
   });
 
