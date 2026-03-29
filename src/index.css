@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body, #root {
+    height: 100%;
+    background-color: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm
+           bg-gradient-to-br from-brand-500 to-brand-700 text-white
+           shadow-lg shadow-brand-900/40
+           hover:from-brand-400 hover:to-brand-600
+           active:scale-95
+           transition-all duration-200 ease-out;
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm
+           bg-surface-50 border border-white/10 text-slate-200
+           hover:bg-surface-100 hover:border-brand-500/30
+           active:scale-95
+           transition-all duration-200 ease-out;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .room-card {
+    @apply glass rounded-2xl p-4 cursor-pointer
+           hover:border-brand-500/40 hover:bg-surface-50/80
+           transition-all duration-200 ease-out
+           animate-fade-in;
+  }
+
+  .room-card.active {
+    @apply border-brand-500/60 bg-brand-950/40;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-50 border border-white/10 rounded-xl px-4 py-3
+           text-sm text-slate-100 placeholder-slate-500
+           focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
+           transition-all duration-200;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
