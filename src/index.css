@@ -5,7 +5,7 @@
 /* ─── Google Font ────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
-/* ─── Twitter / tweakcn Theme Variables ──────────────────────────────────── */
+/* ─── Theme Variables (Light) ────────────────────────────────────────────── */
 :root {
   --background: oklch(1.0000 0 0);
   --foreground: oklch(0.1884 0.0128 248.5103);
@@ -26,11 +26,6 @@
   --border: oklch(0.9317 0.0118 231.6594);
   --input: oklch(0.9809 0.0025 228.7836);
   --ring: oklch(0.6818 0.1584 243.3540);
-  --chart-1: oklch(0.6723 0.1606 244.9955);
-  --chart-2: oklch(0.6907 0.1554 160.3454);
-  --chart-3: oklch(0.8214 0.1600 82.5337);
-  --chart-4: oklch(0.7064 0.1822 151.7125);
-  --chart-5: oklch(0.5919 0.2186 10.5826);
   --sidebar: oklch(0.9784 0.0011 197.1387);
   --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
   --sidebar-primary: oklch(0.6723 0.1606 244.9955);
@@ -41,13 +36,13 @@
   --sidebar-ring: oklch(0.6818 0.1584 243.3540);
   --radius: 1.3rem;
 
-  /* Twitter blue as hex for components that need it */
   --tw-blue: #1d9bf0;
   --tw-blue-hover: #1a8cd8;
   --tw-blue-10: rgba(29, 155, 240, 0.10);
   --tw-blue-20: rgba(29, 155, 240, 0.20);
 }
 
+/* ─── Theme Variables (Dark) ─────────────────────────────────────────────── */
 .dark {
   --background: oklch(0 0 0);
   --foreground: oklch(0.9328 0.0025 228.7857);
@@ -68,11 +63,6 @@
   --border: oklch(0.2674 0.0047 248.0045);
   --input: oklch(0.3020 0.0288 244.8244);
   --ring: oklch(0.6818 0.1584 243.3540);
-  --chart-1: oklch(0.6723 0.1606 244.9955);
-  --chart-2: oklch(0.6907 0.1554 160.3454);
-  --chart-3: oklch(0.8214 0.1600 82.5337);
-  --chart-4: oklch(0.7064 0.1822 151.7125);
-  --chart-5: oklch(0.5919 0.2186 10.5826);
   --sidebar: oklch(0.2097 0.0080 274.5332);
   --sidebar-foreground: oklch(0.8853 0 0);
   --sidebar-primary: oklch(0.6818 0.1584 243.3540);
@@ -96,27 +86,73 @@
     margin: 0;
     padding: 0;
     border-color: var(--border);
+    /* Prevent text size inflation on iOS rotation */
+    -webkit-text-size-adjust: 100%;
   }
 
-  html, body, #root {
+  html {
     height: 100%;
+    /* Use dvh (dynamic viewport height) for mobile — accounts for browser chrome */
+    height: 100dvh;
     background-color: var(--background);
     color: var(--foreground);
     font-family: 'Open Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent pull-to-refresh interference on mobile */
+    overscroll-behavior-y: none;
   }
 
+  body {
+    height: 100%;
+    height: 100dvh;
+    overscroll-behavior: none;
+    /* Prevent iOS long-press context menu on UI elements */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in message bubbles and inputs */
+  p, span, textarea, input, a {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  #root {
+    height: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+  /* ── Focus ring for accessibility ── */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Tap highlight: remove default blue flash on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth image rendering */
+  img {
+    display: block;
+    max-width: 100%;
+  }
 }
 
 /* ─── Components ─────────────────────────────────────────────────────────── */
 @layer components {
 
-  /* Glass card */
+  /* ── Glass card ── */
   .glass {
     background: color-mix(in srgb, var(--card) 80%, transparent);
     backdrop-filter: blur(14px);
@@ -124,29 +160,38 @@
     border: 1px solid var(--border);
   }
 
-  /* Primary CTA — Twitter blue */
+  /* ── Primary CTA — Twitter blue ── */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-3
-           rounded-[var(--radius)] font-semibold text-sm
+           font-semibold text-sm
            transition-all duration-150 ease-out
            active:scale-95 select-none cursor-pointer;
+    border-radius: var(--radius);
     background: var(--tw-blue);
     color: #fff;
+    /* Minimum touch target — 44px per WCAG / Apple HIG */
+    min-height: 44px;
+    touch-action: manipulation;
   }
   .btn-primary:hover  { background: var(--tw-blue-hover); }
   .btn-primary:disabled {
-    @apply opacity-50 cursor-not-allowed active:scale-100;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
+  .btn-primary:disabled:active { transform: none; }
 
-  /* Secondary outline */
+  /* ── Secondary outline ── */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-3
-           rounded-[var(--radius)] font-semibold text-sm
-           border transition-all duration-150 ease-out
+           font-semibold text-sm border
+           transition-all duration-150 ease-out
            active:scale-95 select-none cursor-pointer;
+    border-radius: var(--radius);
     background: var(--background);
     color: var(--foreground);
     border-color: var(--border);
+    min-height: 44px;
+    touch-action: manipulation;
   }
   .btn-secondary:hover {
     background: var(--muted);
@@ -154,40 +199,55 @@
     color: var(--primary);
   }
   .btn-secondary:disabled {
-    @apply opacity-50 cursor-not-allowed active:scale-100;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
+  .btn-secondary:disabled:active { transform: none; }
 
-  /* Badge chip */
+  /* ── Badge chip ── */
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5
            rounded-full text-xs font-semibold;
   }
 
-  /* Room card in sidebar */
+  /* ── Room card in sidebar ── */
   .room-card {
-    @apply cursor-pointer rounded-[var(--radius)] p-4
-           border transition-all duration-200 ease-out
+    @apply cursor-pointer p-4 border
+           transition-all duration-200 ease-out
            animate-fade-in;
+    border-radius: var(--radius);
     background: var(--card);
     border-color: var(--border);
     color: var(--card-foreground);
+    /* At least 60px tall for easy touch */
+    min-height: 60px;
+    touch-action: manipulation;
+    /* Active feedback */
+    -webkit-tap-highlight-color: transparent;
   }
-  .room-card:hover {
+  .room-card:hover,
+  .room-card:focus-visible {
     border-color: var(--primary);
     background: var(--accent);
+    outline: none;
+  }
+  .room-card:active {
+    transform: scale(0.985);
   }
   .room-card.active {
     border-color: var(--primary);
     background: var(--accent);
   }
 
-  /* Text input */
+  /* ── Text input ── */
   .input-field {
-    @apply w-full px-4 py-3 text-sm rounded-[var(--radius)]
+    @apply w-full px-4 py-3 text-sm
            transition-all duration-200 focus:outline-none;
+    border-radius: var(--radius);
     background: var(--input);
     border: 1px solid var(--border);
     color: var(--foreground);
+    min-height: 44px;
   }
   .input-field::placeholder { color: var(--muted-foreground); }
   .input-field:focus {
@@ -198,6 +258,8 @@
 
 /* ─── Utilities ──────────────────────────────────────────────────────────── */
 @layer utilities {
+
+  /* ── Text gradient ── */
   .text-gradient {
     background: linear-gradient(135deg, var(--primary) 0%, oklch(0.6 0.18 280) 100%);
     -webkit-background-clip: text;
@@ -205,13 +267,125 @@
     background-clip: text;
   }
 
+  /* ── Hide scrollbar (cross-browser) ── */
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
   .scrollbar-none::-webkit-scrollbar { display: none; }
 
+  /* ── Glow ── */
   .glow-primary {
     box-shadow: 0 0 20px var(--tw-blue-20);
+  }
+
+  /* ── Safe area padding helpers ── */
+  .safe-top    { padding-top:    env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-left   { padding-left:   env(safe-area-inset-left); }
+  .safe-right  { padding-right:  env(safe-area-inset-right); }
+
+  .pt-safe { padding-top:    max(0px, env(safe-area-inset-top)); }
+  .pb-safe { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+
+  /* ── Animation: fade-in ── */
+  .animate-fade-in {
+    animation: fadeIn 0.25s ease-out both;
+  }
+
+  /* ── Animation: slide up ── */
+  .animate-slide-up {
+    animation: slideUp 0.25s ease-out both;
+  }
+
+  /* ── Animation: pulse-slow ── */
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* ── Animation: ping-slow ── */
+  .animate-ping-slow {
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+/* ─── Keyframes ──────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* ─── Mobile layout fixes ────────────────────────────────────────────────── */
+
+/* Prevent iOS bounce scroll on the whole page — allow only in scroll containers */
+html, body {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+#root {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Allow scrolling inside specific containers */
+.overflow-y-auto,
+.overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mobile: make textareas behave on iOS ── */
+textarea {
+  /* Prevent iOS zoom on focus (font must be >= 16px or use this) */
+  font-size: 16px;
+  /* Override later for actual size */
+}
+
+@media (min-width: 640px) {
+  textarea {
+    font-size: 14px;
+  }
+}
+
+/* ── Prevent double-tap zoom on buttons ── */
+button, a {
+  touch-action: manipulation;
+}
+
+/* ─── Responsive breakpoint helpers ──────────────────────────────────────── */
+
+/* On very small screens (< 360px), reduce padding */
+@media (max-width: 360px) {
+  .btn-primary,
+  .btn-secondary {
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 12px;
+  }
+
+  .room-card {
+    padding: 12px;
+  }
+}
+
+/* Tablet / iPad — side-by-side layout */
+@media (min-width: 768px) {
+  textarea {
+    font-size: 14px;
   }
 }

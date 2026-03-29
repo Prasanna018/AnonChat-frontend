@@ -25,14 +25,15 @@ export default function Dashboard({ user, coords }: Props) {
     }
     try {
       if (activeRoom) await leaveRoom(activeRoom.room_id);
-      const result = await joinRoom(room.room_id);
+      // Pass current coords — server validates user is within 500m
+      const result = await joinRoom(room.room_id, coords.lat, coords.lng);
       setActiveRoom(result.room);
       setMobileView('chat');
     } catch (e: any) {
       const msg = e.response?.data?.detail ?? 'Failed to join room.';
-      toast.error(msg);
+      toast.error(msg, { duration: 5000 });
     }
-  }, [activeRoom]);
+  }, [activeRoom, coords.lat, coords.lng]);
 
   const handleCreate = useCallback(async () => {
     if (isCreating) return;
@@ -61,7 +62,7 @@ export default function Dashboard({ user, coords }: Props) {
 
   const handleRoomClosed = useCallback((_reason: string) => {
     setActiveRoom(null);
-    toast.error('This room has expired or been closed.');
+    toast.error('This room has been closed — everyone left.', { duration: 5000 });
     refresh();
     setMobileView('sidebar');
   }, [refresh]);
@@ -71,12 +72,13 @@ export default function Dashboard({ user, coords }: Props) {
 
       {/* ── Sidebar — desktop always visible, mobile shows/hides ── */}
       <aside
-        className={`
-          flex flex-col shrink-0 transition-all duration-300 ease-out
-          /* Desktop */ md:w-72
-          /* Mobile */ ${mobileView === 'sidebar' ? 'w-full' : 'hidden'}
-          md:flex
-        `}
+        className={[
+          'flex flex-col shrink-0 transition-all duration-300 ease-out',
+          // Desktop: fixed width always visible
+          'md:w-72 md:flex',
+          // Mobile: full-screen when active, hidden when in chat
+          mobileView === 'sidebar' ? 'flex w-full' : 'hidden',
+        ].join(' ')}
         style={{
           background: 'var(--sidebar)',
           borderRight: '1px solid var(--sidebar-border)',
@@ -94,13 +96,13 @@ export default function Dashboard({ user, coords }: Props) {
         />
       </aside>
 
-      {/* ── Main panel — desktop is always visible, mobile only shows when chat view ── */}
+      {/* ── Main panel — always visible on desktop, only in chat view on mobile ── */}
       <main
-        className={`
-          flex-1 flex flex-col min-w-0
-          /* Mobile */ ${mobileView === 'chat' ? 'flex' : 'hidden'}
-          md:flex
-        `}
+        className={[
+          'flex-1 flex flex-col min-w-0',
+          'md:flex',
+          mobileView === 'chat' ? 'flex' : 'hidden',
+        ].join(' ')}
       >
         {activeRoom ? (
           <ChatInterface
@@ -148,7 +150,7 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
         <h1 className="text-3xl font-extrabold text-gradient">EchoSpot</h1>
         <p className="text-sm max-w-xs mx-auto leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {roomCount > 0
-            ? `${roomCount} room${roomCount > 1 ? 's' : ''} nearby — select one or create your own.`
+            ? `${roomCount} room${roomCount > 1 ? 's' : ''} nearby — select one from the sidebar or create your own.`
             : 'No active rooms within 500m. Be the first to start a conversation!'}
         </p>
       </div>
@@ -180,6 +182,18 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
         </span>
       </div>
 
+      {/* Info: room location policy */}
+      <div
+        className="flex items-start gap-2 px-4 py-3 rounded-xl max-w-xs text-xs text-center"
+        style={{ background: 'var(--muted)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+      >
+        <span className="text-base leading-none mt-0.5">📍</span>
+        <span className="leading-relaxed">
+          Rooms are anchored to a location. You must be within <strong>500m</strong> to join.
+          Once inside, you can chat freely — even if you move away.
+        </span>
+      </div>
+
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
         <button onClick={onCreate} disabled={isCreating} className="btn-primary flex-1 py-3.5 text-sm">
@@ -202,7 +216,7 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
 
       {/* Info pills */}
       <div className="flex flex-wrap justify-center gap-2">
-        {['500m radius', 'Anonymous', 'Real-time', 'Media sharing', 'No sign-up'].map((t) => (
+        {['500m radius', 'Anonymous', 'Real-time', 'Media sharing', 'No sign-up', 'Auto-cleanup'].map((t) => (
           <span
             key={t}
             className="badge px-3 py-1 text-[10px]"

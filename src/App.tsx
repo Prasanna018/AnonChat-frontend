@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useGeolocation } from './hooks/useGeolocation';
 import PermissionGate from './components/PermissionGate';
 import Dashboard from './components/Dashboard';
 import type { User } from './types';
-import { createAnonUser } from './services/api';
+import { createAnonUser, updateLocation } from './services/api';
+
+const LOCATION_UPDATE_INTERVAL_MS = 60_000; // 60 seconds
 
 function App() {
   const { coords, permission, error, requestLocation } = useGeolocation();
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
+  const locationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Initialize anonymous user once location is granted
   useEffect(() => {
@@ -41,34 +44,64 @@ function App() {
     initUser();
   }, [permission]);
 
+  // Periodic location sync to server — used for nearby room discovery accuracy
+  // NOTE: This does NOT affect active chat sessions (those ignore location)
+  useEffect(() => {
+    if (!user || !coords) return;
+
+    // Send immediately on mount / user change
+    updateLocation(coords.lat, coords.lng).catch(() => {/* silent */});
+
+    // Then every 60s
+    locationTimerRef.current = setInterval(() => {
+      updateLocation(coords.lat, coords.lng).catch(() => {/* silent */});
+    }, LOCATION_UPDATE_INTERVAL_MS);
+
+    return () => {
+      if (locationTimerRef.current) {
+        clearInterval(locationTimerRef.current);
+        locationTimerRef.current = null;
+      }
+    };
+  }, [user, coords]);
+
   const showPermissionGate = permission !== 'granted' || !user;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+    <div
+      className="flex flex-col h-full"
+      style={{ background: 'var(--background)', color: 'var(--foreground)' }}
+    >
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           style: {
             background: 'var(--card)',
             color: 'var(--card-foreground)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
+            borderRadius: '12px',
             fontSize: '13px',
             fontFamily: 'Open Sans, sans-serif',
+            maxWidth: '340px',
           },
+          duration: 4000,
         }}
       />
 
-      {/* Top nav */}
+      {/* ── Top nav ── */}
       <header
-        className="flex items-center justify-between px-4 py-3 shrink-0"
+        className="flex items-center justify-between px-4 shrink-0"
         style={{
           background: 'var(--card)',
           borderBottom: '1px solid var(--border)',
+          height: '52px',
+          // Push below iOS status bar (safe area top)
+          paddingTop: 'env(safe-area-inset-top)',
+          minHeight: 'calc(52px + env(safe-area-inset-top))',
         }}
       >
+        {/* Logo */}
         <div className="flex items-center gap-2.5">
-          {/* Logo mark */}
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
             style={{ background: 'var(--primary)' }}
@@ -90,19 +123,24 @@ function App() {
           </span>
         </div>
 
+        {/* Right side */}
         <div className="flex items-center gap-2">
+          {/* Location indicator */}
           {coords && (
             <div
-              className="hidden sm:flex items-center gap-1.5 text-xs"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="hidden sm:flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
+              style={{
+                background: 'rgba(34,197,94,0.08)',
+                color: '#22c55e',
+                border: '1px solid rgba(34,197,94,0.2)',
+              }}
             >
-              <span
-                className="w-2 h-2 rounded-full animate-pulse-slow inline-block"
-                style={{ background: '#22c55e' }}
-              />
-              Location active
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse-slow inline-block" />
+              GPS active
             </div>
           )}
+
+          {/* User chip */}
           {user && (
             <div
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl"
@@ -114,15 +152,25 @@ function App() {
               >
                 {user.display_name[0].toUpperCase()}
               </div>
-              <span className="text-xs font-semibold max-w-[80px] truncate" style={{ color: 'var(--foreground)' }}>
+              <span className="text-xs font-semibold max-w-[72px] truncate" style={{ color: 'var(--foreground)' }}>
                 {user.display_name}
+              </span>
+              <span
+                className="hidden sm:inline text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{
+                  background: 'rgba(34,197,94,0.1)',
+                  color: '#22c55e',
+                  border: '1px solid rgba(34,197,94,0.2)',
+                }}
+              >
+                anon
               </span>
             </div>
           )}
         </div>
       </header>
 
-      {/* Body */}
+      {/* ── Body ── */}
       <div className="flex-1 overflow-hidden">
         {showPermissionGate ? (
           authLoading ? (

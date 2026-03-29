@@ -9,7 +9,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Inject auth token
+// Inject auth token from localStorage
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('echospot_token');
   if (token) {
@@ -37,8 +37,16 @@ export const createRoom = async (lat: number, lng: number): Promise<Room> => {
   return data;
 };
 
-export const joinRoom = async (roomId: string): Promise<{ status: string; room: Room }> => {
-  const { data } = await api.post(`/rooms/${roomId}/join`);
+/**
+ * Join a room — lat/lng are REQUIRED so the server can validate the user
+ * is physically within 500m of the room. Pass current GPS coords.
+ */
+export const joinRoom = async (
+  roomId: string,
+  lat: number,
+  lng: number
+): Promise<{ status: string; room: Room }> => {
+  const { data } = await api.post(`/rooms/${roomId}/join`, { lat, lng });
   return data;
 };
 

@@ -1,14 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/echo-icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ── Mobile-first viewport ─────────────────────────────────────── -->
+    <!-- viewport-fit=cover enables safe-area-inset-* CSS env() variables -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- ── PWA / Mobile native feel ─────────────────────────────────── -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EchoSpot" />
+
+    <!-- ── Theme colors (light/dark) ─────────────────────────────────── -->
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- ── SEO ──────────────────────────────────────────────────────── -->
     <meta name="description" content="EchoSpot – Real-time anonymous location-based chat. Connect with people within 500 meters, no sign-up required." />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="keywords" content="anonymous chat, location chat, nearby chat, local chat, EchoSpot" />
+    <meta property="og:title" content="EchoSpot – Chat Nearby, Anonymously" />
+    <meta property="og:description" content="Connect with people within 500m in real-time. No account needed." />
+    <meta property="og:type" content="website" />
+
+    <!-- ── Fonts ─────────────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+
     <title>EchoSpot – Chat Nearby, Anonymously</title>
   </head>
   <body>

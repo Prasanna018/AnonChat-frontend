@@ -10,7 +10,6 @@ export default {
         mono: ['Menlo', 'monospace'],
       },
       colors: {
-        // Twitter theme CSS-var-based colors
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         card: {
@@ -54,7 +53,6 @@ export default {
           border: 'var(--sidebar-border)',
           ring: 'var(--sidebar-ring)',
         },
-        // Keep chart colors
         chart: {
           1: 'var(--chart-1)',
           2: 'var(--chart-2)',
@@ -64,23 +62,40 @@ export default {
         },
       },
       borderRadius: {
-        sm: 'calc(var(--radius) - 4px)',
+        sm:   'calc(var(--radius) - 4px)',
         DEFAULT: 'calc(var(--radius) - 2px)',
-        md: 'calc(var(--radius) - 2px)',
-        lg: 'var(--radius)',
-        xl: 'calc(var(--radius) + 4px)',
-        '2xl': 'calc(var(--radius) + 8px)',
-        '3xl': 'calc(var(--radius) + 16px)',
+        md:   'calc(var(--radius) - 2px)',
+        lg:   'var(--radius)',
+        xl:   'calc(var(--radius) + 4px)',
+        '2xl':'calc(var(--radius) + 8px)',
+        '3xl':'calc(var(--radius) + 16px)',
       },
       animation: {
-        'fade-in':    'fadeIn 0.25s ease-out',
-        'slide-up':   'slideUp 0.25s ease-out',
+        'fade-in':    'fadeIn 0.25s ease-out both',
+        'slide-up':   'slideUp 0.25s ease-out both',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite',
         'ping-slow':  'ping 2s cubic-bezier(0,0,0.2,1) infinite',
       },
       keyframes: {
-        fadeIn:  { from: { opacity: '0' }, to: { opacity: '1' } },
-        slideUp: { from: { opacity: '0', transform: 'translateY(10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        fadeIn:  {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
+        },
+        slideUp: {
+          from: { opacity: '0', transform: 'translateY(12px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      // Allow 100dvh in height utilities (dynamic viewport height = accounts for mobile browser chrome)
+      height: {
+        'screen-d': '100dvh',
+      },
+      minHeight: {
+        'screen-d': '100dvh',
+      },
+      // Tiny breakpoint for very small phones
+      screens: {
+        'xs': '360px',
       },
     },
   },
