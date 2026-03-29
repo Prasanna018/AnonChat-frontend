@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Message, WSEvent } from '../types';
 
-const WS_BASE = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/ws`;
+const API_URL = import.meta.env.VITE_API_URL || '';
+const WS_BASE = API_URL
+  ? `${API_URL.replace(/^http/, 'ws')}/api/ws`
+  : `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/ws`;
 const INITIAL_BACKOFF = 1000;
 const MAX_BACKOFF = 30000;
 const PING_INTERVAL = 20000;
