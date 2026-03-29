@@ -2,81 +2,207 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Google Font ────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+/* ─── Twitter / tweakcn Theme Variables ──────────────────────────────────── */
+:root {
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.1884 0.0128 248.5103);
+  --card: oklch(0.9784 0.0011 197.1387);
+  --card-foreground: oklch(0.1884 0.0128 248.5103);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.1884 0.0128 248.5103);
+  --primary: oklch(0.6723 0.1606 244.9955);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.1884 0.0128 248.5103);
+  --secondary-foreground: oklch(1.0000 0 0);
+  --muted: oklch(0.9222 0.0013 286.3737);
+  --muted-foreground: oklch(0.1884 0.0128 248.5103);
+  --accent: oklch(0.9392 0.0166 250.8453);
+  --accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9317 0.0118 231.6594);
+  --input: oklch(0.9809 0.0025 228.7836);
+  --ring: oklch(0.6818 0.1584 243.3540);
+  --chart-1: oklch(0.6723 0.1606 244.9955);
+  --chart-2: oklch(0.6907 0.1554 160.3454);
+  --chart-3: oklch(0.8214 0.1600 82.5337);
+  --chart-4: oklch(0.7064 0.1822 151.7125);
+  --chart-5: oklch(0.5919 0.2186 10.5826);
+  --sidebar: oklch(0.9784 0.0011 197.1387);
+  --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
+  --sidebar-primary: oklch(0.6723 0.1606 244.9955);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.9392 0.0166 250.8453);
+  --sidebar-accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --sidebar-border: oklch(0.9271 0.0101 238.5177);
+  --sidebar-ring: oklch(0.6818 0.1584 243.3540);
+  --radius: 1.3rem;
+
+  /* Twitter blue as hex for components that need it */
+  --tw-blue: #1d9bf0;
+  --tw-blue-hover: #1a8cd8;
+  --tw-blue-10: rgba(29, 155, 240, 0.10);
+  --tw-blue-20: rgba(29, 155, 240, 0.20);
+}
+
+.dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.9328 0.0025 228.7857);
+  --card: oklch(0.2097 0.0080 274.5332);
+  --card-foreground: oklch(0.8853 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(0.9328 0.0025 228.7857);
+  --primary: oklch(0.6692 0.1607 245.0110);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9622 0.0035 219.5331);
+  --secondary-foreground: oklch(0.1884 0.0128 248.5103);
+  --muted: oklch(0.2090 0 0);
+  --muted-foreground: oklch(0.5637 0.0078 247.9662);
+  --accent: oklch(0.1928 0.0331 242.5459);
+  --accent-foreground: oklch(0.6692 0.1607 245.0110);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2674 0.0047 248.0045);
+  --input: oklch(0.3020 0.0288 244.8244);
+  --ring: oklch(0.6818 0.1584 243.3540);
+  --chart-1: oklch(0.6723 0.1606 244.9955);
+  --chart-2: oklch(0.6907 0.1554 160.3454);
+  --chart-3: oklch(0.8214 0.1600 82.5337);
+  --chart-4: oklch(0.7064 0.1822 151.7125);
+  --chart-5: oklch(0.5919 0.2186 10.5826);
+  --sidebar: oklch(0.2097 0.0080 274.5332);
+  --sidebar-foreground: oklch(0.8853 0 0);
+  --sidebar-primary: oklch(0.6818 0.1584 243.3540);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.1928 0.0331 242.5459);
+  --sidebar-accent-foreground: oklch(0.6692 0.1607 245.0110);
+  --sidebar-border: oklch(0.3795 0.0220 240.5943);
+  --sidebar-ring: oklch(0.6818 0.1584 243.3540);
+  --radius: 1.3rem;
+
+  --tw-blue: #1d9bf0;
+  --tw-blue-hover: #1a8cd8;
+  --tw-blue-10: rgba(29, 155, 240, 0.10);
+  --tw-blue-20: rgba(29, 155, 240, 0.20);
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
 @layer base {
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-color: var(--border);
+  }
 
   html, body, #root {
     height: 100%;
-    background-color: #0f172a;
-    color: #f1f5f9;
-    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Open Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 }
 
+/* ─── Components ─────────────────────────────────────────────────────────── */
 @layer components {
+
+  /* Glass card */
   .glass {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
   }
 
+  /* Primary CTA — Twitter blue */
   .btn-primary {
-    @apply flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm
-           bg-gradient-to-br from-brand-500 to-brand-700 text-white
-           shadow-lg shadow-brand-900/40
-           hover:from-brand-400 hover:to-brand-600
-           active:scale-95
-           transition-all duration-200 ease-out;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3
+           rounded-[var(--radius)] font-semibold text-sm
+           transition-all duration-150 ease-out
+           active:scale-95 select-none cursor-pointer;
+    background: var(--tw-blue);
+    color: #fff;
+  }
+  .btn-primary:hover  { background: var(--tw-blue-hover); }
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed active:scale-100;
   }
 
+  /* Secondary outline */
   .btn-secondary {
-    @apply flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm
-           bg-surface-50 border border-white/10 text-slate-200
-           hover:bg-surface-100 hover:border-brand-500/30
-           active:scale-95
-           transition-all duration-200 ease-out;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3
+           rounded-[var(--radius)] font-semibold text-sm
+           border transition-all duration-150 ease-out
+           active:scale-95 select-none cursor-pointer;
+    background: var(--background);
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--muted);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .btn-secondary:disabled {
+    @apply opacity-50 cursor-not-allowed active:scale-100;
   }
 
+  /* Badge chip */
   .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5
+           rounded-full text-xs font-semibold;
   }
 
+  /* Room card in sidebar */
   .room-card {
-    @apply glass rounded-2xl p-4 cursor-pointer
-           hover:border-brand-500/40 hover:bg-surface-50/80
-           transition-all duration-200 ease-out
+    @apply cursor-pointer rounded-[var(--radius)] p-4
+           border transition-all duration-200 ease-out
            animate-fade-in;
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--card-foreground);
   }
-
+  .room-card:hover {
+    border-color: var(--primary);
+    background: var(--accent);
+  }
   .room-card.active {
-    @apply border-brand-500/60 bg-brand-950/40;
+    border-color: var(--primary);
+    background: var(--accent);
   }
 
+  /* Text input */
   .input-field {
-    @apply w-full bg-surface-50 border border-white/10 rounded-xl px-4 py-3
-           text-sm text-slate-100 placeholder-slate-500
-           focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
-           transition-all duration-200;
+    @apply w-full px-4 py-3 text-sm rounded-[var(--radius)]
+           transition-all duration-200 focus:outline-none;
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+  }
+  .input-field::placeholder { color: var(--muted-foreground); }
+  .input-field:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px var(--tw-blue-10);
   }
 }
 
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, oklch(0.6 0.18 280) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .glow-blue {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
 
   .scrollbar-none {
@@ -84,4 +210,8 @@
     -ms-overflow-style: none;
   }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  .glow-primary {
+    box-shadow: 0 0 20px var(--tw-blue-20);
+  }
 }

@@ -45,7 +45,9 @@ export type WSEventType =
   | 'user_left'
   | 'room_closed'
   | 'typing'
-  | 'participant_count';
+  | 'participant_count'
+  | 'ping'
+  | 'pong';
 
 export interface WSEvent {
   type: WSEventType;

@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Message, WSEvent } from '../types';
 
 const WS_BASE = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/ws`;
+const INITIAL_BACKOFF = 1000;
 const MAX_BACKOFF = 30000;
+const PING_INTERVAL = 20000;
 
 interface UseWebSocketOptions {
   roomId: string | null;
@@ -15,37 +17,69 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
   const [connected, setConnected] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
 
+  // Store mutable values in refs to keep callbacks stable
   const wsRef = useRef<WebSocket | null>(null);
-  const backoffRef = useRef(1000);
+  const backoffRef = useRef(INITIAL_BACKOFF);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const shouldReconnectRef = useRef(true);
-  const currentRoomRef = useRef<string | null>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set()); // dedup messages after reconnect
 
+  // Keep onRoomClosed in a ref so it doesn't destabilize `connect`
+  const onRoomClosedRef = useRef(onRoomClosed);
+  useEffect(() => { onRoomClosedRef.current = onRoomClosed; }, [onRoomClosed]);
+
+  const clearTimers = useCallback(() => {
+    if (reconnectTimerRef.current) { clearTimeout(reconnectTimerRef.current); reconnectTimerRef.current = null; }
+    if (pingIntervalRef.current) { clearInterval(pingIntervalRef.current); pingIntervalRef.current = null; }
+  }, []);
 
   const connect = useCallback(() => {
     if (!roomId || !token) return;
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    // Don't open a second connection if one is already connecting/open
+    const ws = wsRef.current;
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 
     const url = `${WS_BASE}/${roomId}?token=${encodeURIComponent(token)}`;
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
-    currentRoomRef.current = roomId;
+    const socket = new WebSocket(url);
+    wsRef.current = socket;
 
-    ws.onopen = () => {
+    socket.onopen = () => {
       setConnected(true);
-      backoffRef.current = 1000;
+      backoffRef.current = INITIAL_BACKOFF;
+
+      // Start ping heartbeat
+      clearTimers();
+      pingIntervalRef.current = setInterval(() => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, PING_INTERVAL);
     };
 
-    ws.onmessage = (e) => {
+    socket.onmessage = (e) => {
       try {
         const event: WSEvent = JSON.parse(e.data);
 
+        if (event.type === 'pong') {
+          // Heartbeat response — no UI action needed
+          return;
+        }
+
         if (event.type === 'history') {
-          setMessages((event.messages as Message[]) ?? []);
+          const msgs = (event.messages as Message[]) ?? [];
+          // Reset dedup set and seed with history IDs
+          seenIdsRef.current = new Set(msgs.map((m) => m.message_id));
+          setMessages(msgs);
+
         } else if (event.type === 'message') {
+          const id = event.message_id!;
+          if (seenIdsRef.current.has(id)) return; // dedup
+          seenIdsRef.current.add(id);
+
           const msg: Message = {
-            message_id: event.message_id!,
-            room_id: roomId,
+            message_id: id,
+            room_id: roomId ?? '',
             user_id: event.user_id!,
             user_name: event.user_name!,
             content: event.content!,
@@ -53,19 +87,23 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
             is_system: event.is_system ?? false,
           };
           setMessages((prev) => [...prev, msg]);
+
         } else if (event.type === 'user_joined' || event.type === 'user_left') {
           if (event.participant_count !== undefined) setParticipantCount(event.participant_count);
+
         } else if (event.type === 'participant_count') {
           if (event.participant_count !== undefined) setParticipantCount(event.participant_count);
+
         } else if (event.type === 'room_closed') {
-          onRoomClosed?.(event.reason ?? 'Room has expired.');
+          onRoomClosedRef.current?.(event.reason ?? 'Room has expired.');
         }
-      } catch { /* ignore */ }
+      } catch { /* ignore malformed frames */ }
     };
 
-    ws.onclose = () => {
+    socket.onclose = () => {
       setConnected(false);
-      if (shouldReconnectRef.current && currentRoomRef.current === roomId) {
+      clearTimers();
+      if (shouldReconnectRef.current) {
         reconnectTimerRef.current = setTimeout(() => {
           backoffRef.current = Math.min(backoffRef.current * 2, MAX_BACKOFF);
           connect();
@@ -73,29 +111,38 @@ export function useWebSocket({ roomId, token, onRoomClosed }: UseWebSocketOption
       }
     };
 
-    ws.onerror = () => { ws.close(); };
-  }, [roomId, token, onRoomClosed]);
+    socket.onerror = () => {
+      socket.close();
+    };
+  // Only depends on roomId + token — stable when parent re-renders for unrelated reasons
+  }, [roomId, token, clearTimers]);
 
   useEffect(() => {
+    if (!roomId || !token) return;
+
     shouldReconnectRef.current = true;
+    backoffRef.current = INITIAL_BACKOFF;
+    seenIdsRef.current = new Set();
+    // Reset UI state for the new room
     setMessages([]);
     setParticipantCount(0);
-    connect();
+    setConnected(false);
 
-    // Heartbeat to keep the Vite dev server proxy connection alive
-    const pingInterval = setInterval(() => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: 'ping' }));
-      }
-    }, 15000);
+    connect();
 
     return () => {
       shouldReconnectRef.current = false;
-      clearInterval(pingInterval);
-      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-      wsRef.current?.close();
+      clearTimers();
+      const ws = wsRef.current;
+      if (ws) {
+        ws.onclose = null; // prevent triggering reconnect on intentional close
+        ws.close();
+        wsRef.current = null;
+      }
     };
-  }, [roomId, token, connect]);
+  // Run only when room or token changes — NOT when connect/clearTimers recreate
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, token]);
 
   const sendMessage = useCallback((content: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

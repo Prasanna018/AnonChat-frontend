@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { Room, Coords, User } from '../types';
 import { useNearbyRooms } from '../hooks/useNearbyRooms';
 import NearbyRoomsList from './Sidebar/NearbyRoomsList';
@@ -17,21 +17,19 @@ export default function Dashboard({ user, coords }: Props) {
   const [isCreating, setIsCreating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const handleJoin = async (room: Room) => {
+  const handleJoin = useCallback(async (room: Room) => {
     if (activeRoom?.room_id === room.room_id) return;
     try {
       if (activeRoom) await leaveRoom(activeRoom.room_id);
       const result = await joinRoom(room.room_id);
       setActiveRoom(result.room);
-      // Refresh rooms to get updated participant counts
-      setTimeout(refresh, 500);
     } catch (e: any) {
       const msg = e.response?.data?.detail ?? 'Failed to join room.';
       toast.error(msg);
     }
-  };
+  }, [activeRoom]);
 
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     if (isCreating) return;
     setIsCreating(true);
     try {
@@ -46,27 +44,33 @@ export default function Dashboard({ user, coords }: Props) {
     } finally {
       setIsCreating(false);
     }
-  };
+  }, [isCreating, activeRoom, coords.lat, coords.lng, setRooms]);
 
-  const handleLeave = async () => {
+  const handleLeave = useCallback(async () => {
     if (!activeRoom) return;
     try {
       await leaveRoom(activeRoom.room_id);
     } catch { /* silent */ }
     setActiveRoom(null);
-    refresh();
-  };
+  }, [activeRoom]);
 
-  const handleRoomClosed = (_reason: string) => {
+  const handleRoomClosed = useCallback((_reason: string) => {
     setActiveRoom(null);
     toast.error('This room has expired or been closed.');
     refresh();
-  };
+  }, [refresh]);
 
   return (
-    <div className="flex h-full">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-72' : 'w-0 overflow-hidden'} flex-shrink-0 glass border-r border-white/5 flex flex-col transition-all duration-300 ease-out`}>
+    <div className="flex h-full" style={{ background: 'var(--background)' }}>
+      {/* ── Sidebar ── */}
+      <aside
+        className={`${sidebarOpen ? 'w-72' : 'w-0 overflow-hidden'} flex-shrink-0 flex flex-col transition-all duration-300 ease-out`}
+        style={{
+          background: 'var(--sidebar)',
+          borderRight: '1px solid var(--sidebar-border)',
+          color: 'var(--sidebar-foreground)',
+        }}
+      >
         <NearbyRoomsList
           rooms={rooms}
           loading={loading}
@@ -77,15 +81,20 @@ export default function Dashboard({ user, coords }: Props) {
         />
       </aside>
 
-      {/* Toggle sidebar (mobile) */}
+      {/* ── Toggle sidebar (mobile) ── */}
       <button
         onClick={() => setSidebarOpen((v) => !v)}
-        className="absolute top-16 left-0 z-10 md:hidden w-6 h-10 flex items-center justify-center bg-surface-50 border border-white/10 rounded-r-lg text-slate-400"
+        className="absolute top-16 left-0 z-10 md:hidden w-6 h-10 flex items-center justify-center rounded-r-lg text-sm transition-all"
+        style={{
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
+          color: 'var(--muted-foreground)',
+        }}
       >
         {sidebarOpen ? '‹' : '›'}
       </button>
 
-      {/* Main panel */}
+      {/* ── Main panel ── */}
       <main className="flex-1 flex flex-col min-w-0">
         {activeRoom ? (
           <ChatInterface
@@ -123,11 +132,14 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
     <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8 animate-fade-in">
       {/* Hero */}
       <div className="text-center space-y-3">
-        <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-brand-500 via-brand-600 to-violet-600 flex items-center justify-center shadow-2xl shadow-brand-900/50 mb-4">
+        <div
+          className="w-24 h-24 mx-auto rounded-3xl flex items-center justify-center shadow-2xl mb-4"
+          style={{ background: 'var(--primary)' }}
+        >
           <span className="text-5xl">🌐</span>
         </div>
         <h1 className="text-4xl font-extrabold text-gradient">EchoSpot</h1>
-        <p className="text-slate-400 text-base max-w-xs mx-auto leading-relaxed">
+        <p className="text-base max-w-xs mx-auto leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {roomCount > 0
             ? `${roomCount} room${roomCount > 1 ? 's' : ''} nearby — select one or create your own.`
             : 'No active rooms within 500m. Be the first to start a conversation!'}
@@ -135,15 +147,35 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
       </div>
 
       {/* User badge */}
-      <div className="flex items-center gap-3 glass rounded-2xl px-5 py-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-brand-600 flex items-center justify-center font-bold text-white">
+      <div
+        className="flex items-center gap-3 px-5 py-3 rounded-[var(--radius)]"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center font-bold"
+          style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+        >
           {userName[0].toUpperCase()}
         </div>
         <div>
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">You are</p>
-          <p className="text-white font-bold">{userName}</p>
+          <p
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            You are
+          </p>
+          <p className="font-bold" style={{ color: 'var(--foreground)' }}>{userName}</p>
         </div>
-        <span className="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 ml-1">Anonymous</span>
+        <span
+          className="badge ml-1"
+          style={{
+            background: 'rgba(34,197,94,0.1)',
+            color: '#22c55e',
+            border: '1px solid rgba(34,197,94,0.2)',
+          }}
+        >
+          Anonymous
+        </span>
       </div>
 
       {/* CTAs */}
@@ -166,14 +198,22 @@ function WelcomePanel({ userName, roomCount, isCreating, onCreate, onFindRooms }
           )}
         </button>
         <button onClick={onFindRooms} className="btn-secondary flex-1 py-4 text-base">
-          <span>🔍</span> Find Nearby Rooms
+          <span>🔍</span> Refresh Rooms
         </button>
       </div>
 
       {/* Info pills */}
       <div className="flex flex-wrap justify-center gap-2 mt-2">
         {['500m radius', 'Anonymous', 'Real-time', 'No sign-up'].map((t) => (
-          <span key={t} className="badge bg-white/5 text-slate-400 border border-white/10 px-3 py-1 text-xs">
+          <span
+            key={t}
+            className="badge px-3 py-1 text-xs"
+            style={{
+              background: 'var(--muted)',
+              color: 'var(--muted-foreground)',
+              border: '1px solid var(--border)',
+            }}
+          >
             {t}
           </span>
         ))}
